@@ -1,0 +1,21 @@
+name: linkbud_flutter
+description: Flutter bridge to the LinkBud Android and iOS navigation SDK previews.
+version: 0.4.0
+publish_to: none
+environment:
+  sdk: '>=3.13.0 <4.0.0'
+  flutter: '>=3.47.0'
+dependencies:
+  flutter:
+    sdk: flutter
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: dev.linkbud.flutter
+        pluginClass: LinkBudFlutterPlugin
+      ios:
+        pluginClass: LinkBudFlutterPlugin
