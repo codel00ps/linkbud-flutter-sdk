@@ -2,7 +2,7 @@
 
 A thin Android/iOS plugin around the existing [Kotlin](../linkbud-android-sdk/README.md) and [Swift](../linkbud-ios-sdk/README.md) previews. Native code owns URL/payload validation, Play referral exchange, manual iOS recovery, installation identity, backup-excluded pending storage, retry deadlines and acknowledgment history. Dart does not implement a second referral protocol or store journey state.
 
-This is a local, unreleased preview. Signed-device, store-install and real host-authentication acceptance for the native SDKs and Flutter host remain open. It never promises automatic iOS recovery. Android and iOS setup, recovery behavior and acceptance evidence stay separate.
+This is a 0.4.0 preview intended for integration testing. Signed-device, store-install and real host-authentication acceptance for the native SDKs and Flutter host remain open. It never promises automatic iOS recovery. Android and iOS setup, recovery behavior and acceptance evidence stay separate.
 
 ## Compatibility
 
@@ -94,7 +94,7 @@ The integration smoke test exercises the actual native channel with invalid link
 
 ## Packaging and release ownership
 
-`publish_to: none` deliberately prevents accidental publication. No upstream release URL, registry account, signing identity or package ownership has been configured. The podspec homepage identifies the local development application. Before a public release, the operator must establish repository/package ownership, replace local package metadata with actual public project URLs, review license/release policy, remove `publish_to: none`, then run `dart pub publish --dry-run` and review its file list. Do not publish an unprepared package.
+Version 0.4.0 is a public preview package intended for initial integration testing. The package archive includes the bridge, native source snapshots, sample and license; the repository is currently private, so its GitHub URL and sibling-repository links require access. Review the exact package contents with `dart pub publish --dry-run` before publishing. Publishing to pub.dev makes this version publicly downloadable; later fixes require a new package version.
 
 To make a local distribution from the repository root:
 
@@ -104,7 +104,7 @@ python3 flutter-sdk/tool/prepare_native.py --check
 python3 flutter-sdk/tool/package_preview.py /tmp/linkbud-flutter-0.4.0.tar.gz
 ```
 
-The archive includes native sources and their manifest, the bridge, sample and license. It excludes caches, local settings and build outputs. Unpack it into a fresh directory, run `flutter pub get`, `flutter test` and build both sample hosts before distribution. Public release and signed device acceptance require the operator-owned prerequisites in the acceptance protocols.
+The archive includes native sources and their manifest, the bridge, sample and license. It excludes caches, local settings and build outputs. Unpack it into a fresh directory, run `flutter pub get`, `flutter test` and build both sample hosts before distribution. The 0.4.0 preview is intended for package integration testing; signed device acceptance remains pending and is part of the follow-up validation.
 
 ## Basic analytics
 
@@ -133,9 +133,9 @@ behavior and store/device acceptance limits remain unchanged. Rebuild host apps 
 updating LinkBud alone cannot add destination reporting to an installed app.
 
 
-## Testing and Live · 0.4.0 unpublished preview
+## Testing and Live · 0.4.0 preview
 
-Configure new integrations with testing or live. Staging is retired. Development and Production are accepted legacy aliases for Testing and Live respectively, including URL parsing. The backend echoes the requested API environment for older SDK payload validation. Association documents and Android manifest snippets include both canonical and legacy paths. Refresh app configuration/manifest when adopting new URLs; existing installed Android builds with only a development path filter cannot receive testing URLs until rebuilt. Keep legacy SDK configuration until outstanding pending journeys finish; changing the configured environment changes the SDK storage namespace. No package was published by this change.
+Configure new integrations with testing or live. Staging is retired. Development and Production are accepted legacy aliases for Testing and Live respectively, including URL parsing. The backend echoes the requested API environment for older SDK payload validation. Association documents and Android manifest snippets include both canonical and legacy paths. Refresh app configuration/manifest when adopting new URLs; existing installed Android builds with only a development path filter cannot receive testing URLs until rebuilt. Keep legacy SDK configuration until outstanding pending journeys finish; changing the configured environment changes the SDK storage namespace.
 
 ## Short URLs · 0.4.0 preview
 
@@ -154,4 +154,4 @@ after cutover fails and requires a newly shared URL. Adding a prefix preserves s
 identity and pending recovery; always resume/revalidate before authorizing navigation. Recovery
 responses include the same prefix/code context. Android still needs a matching Play installation;
 iOS still requires explicit code entry or reopening the original short link after installation.
-These source changes are unpublished and do not update Aurix or any installed build.
+These source changes do not update Aurix or any installed build.
