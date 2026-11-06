@@ -1,4 +1,4 @@
-# 0.4.0 preview · unpublished
+# 0.4.0 preview
 
 - Add optional public `routePrefix` configuration and strict six-character short-path resolution.
 - Bind direct/recovery responses to the configured prefix; preserve persisted installation identity.

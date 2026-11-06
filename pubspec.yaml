@@ -1,7 +1,7 @@
 name: linkbud_flutter
-description: Flutter bridge to the LinkBud Android and iOS navigation SDK previews.
+description: Flutter plugin for LinkBud app-link resolution and explicit recovery on Android and iOS.
 version: 0.4.0
-publish_to: none
+repository: https://github.com/codel00ps/linkbud-flutter-sdk
 environment:
   sdk: '>=3.13.0 <4.0.0'
   flutter: '>=3.47.0'
