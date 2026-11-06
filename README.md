@@ -1,8 +1,31 @@
 # LinkBud Flutter SDK · 0.4.0 preview
 
-A thin Android/iOS plugin around the existing [Kotlin](../linkbud-android-sdk/README.md) and [Swift](../linkbud-ios-sdk/README.md) previews. Native code owns URL/payload validation, Play referral exchange, manual iOS recovery, installation identity, backup-excluded pending storage, retry deadlines and acknowledgment history. Dart does not implement a second referral protocol or store journey state.
+A Flutter plugin for Android and iOS. Native code owns URL/payload validation, Play referral exchange, manual iOS recovery, installation identity, backup-excluded pending storage, retry deadlines and acknowledgment history. Dart does not implement a second referral protocol or store journey state.
 
-This is a 0.4.0 preview intended for integration testing. Signed-device, store-install and real host-authentication acceptance for the native SDKs and Flutter host remain open. It never promises automatic iOS recovery. Android and iOS setup, recovery behavior and acceptance evidence stay separate.
+Version 0.4.0 is available as a [preview package on pub.dev](https://pub.dev/packages/linkbud_flutter) for integration testing. Signed-device, store-install and real host-authentication acceptance for the native SDKs and Flutter host remain open. It never promises automatic iOS recovery. Android and iOS setup, recovery behavior and acceptance evidence stay separate.
+
+## Install from pub.dev
+
+From your Flutter app directory, run:
+
+```sh
+flutter pub add linkbud_flutter:^0.4.0
+```
+
+Or add the dependency in `pubspec.yaml` and run `flutter pub get`:
+
+```yaml
+dependencies:
+  linkbud_flutter: ^0.4.0
+```
+
+Import the package in Dart:
+
+```dart
+import 'package:linkbud_flutter/linkbud_flutter.dart';
+```
+
+The package includes the Android and iOS native source snapshots. Flutter apps should install this package only; they do not also need the standalone Android Maven artifact or iOS Swift package. Start with [Host lifecycle and authentication](#host-lifecycle-and-authentication) to configure and connect the plugin.
 
 ## Compatibility
 
@@ -16,7 +39,7 @@ This is a 0.4.0 preview intended for integration testing. Signed-device, store-i
 
 Other Flutter/Xcode versions are unverified. No web, desktop, background isolate or multi-engine API is offered. A second engine receives `engine_in_use`; changing configuration receives `configuration_locked`. Use separate application IDs/build flavors for environments. Restart the app process to switch configuration.
 
-## Prepare and install locally
+## Local development
 
 From the LinkBud root:
 
@@ -28,7 +51,7 @@ flutter test
 flutter analyze
 ```
 
-The preparation command copies the exact native source files into tracked snapshot directories inside the plugin and writes their SHA-256 manifest. The bridge compiles these files directly; never edit the staged copies. Run it again after changing either native SDK. `--check` fails for missing, extra or altered source files. Run `--check` when both sibling native repositories are available to verify upstream parity. Run `--verify` in an independent Flutter checkout to verify bundled hashes without those repositories. A prepared package is self-contained and does not depend on an unpublished Maven or Swift registry.
+The preparation command copies the exact native source files into tracked snapshot directories inside the plugin and writes their SHA-256 manifest. The bridge compiles these files directly; never edit the staged copies. Run it again after changing either native SDK. `--check` fails for missing, extra or altered source files. Run `--check` when both sibling native repositories are available to verify upstream parity. Run `--verify` in an independent Flutter checkout to verify bundled hashes without those repositories. The published Flutter package is self-contained and does not require users to install the standalone native SDK packages.
 
 Add a local `path:` dependency on this directory (as the sample does). For iOS, the package supplies both a CocoaPods specification and a Swift Package Manager manifest; CocoaPods is the checked integration in the pinned Flutter toolchain. The committed native snapshots are ready to build without the sibling repositories. Refresh them with `tool/prepare_native.py` only after native changes; `--android-sdk` and `--ios-sdk` accept alternate checkout paths. Set the host minimum Android SDK to 26, iOS deployment target to 15.0, and the Android toolchain to the versions above. CocoaPods must be installed to build the iOS sample with the documented setup.
 
@@ -78,7 +101,7 @@ There is no background polling. Android non-Play/unsupported referrer recovery r
 
 ## Sample and validation
 
-The sample includes complete Android/iOS host projects. Configure public values using Dart defines and the matching native association configuration described in [the Flutter device protocol](../linkbud/docs/flutter-device-validation.md). Do not expect the illustrative default identifiers/domain to resolve real links.
+The sample includes complete Android/iOS host projects. Configure public values using Dart defines and the matching native association configuration described in [the Flutter device protocol](https://github.com/codel00ps/linkbud.io/blob/master/docs/flutter-device-validation.md). Do not expect the illustrative default identifiers/domain to resolve real links.
 
 ```sh
 cd linkbud-flutter-sdk/example
@@ -94,7 +117,7 @@ The integration smoke test exercises the actual native channel with invalid link
 
 ## Packaging and release ownership
 
-Version 0.4.0 is a public preview package intended for initial integration testing. The package archive includes the bridge, native source snapshots, sample and license; the repository is currently private, so its GitHub URL and sibling-repository links require access. Review the exact package contents with `dart pub publish --dry-run` before publishing. Publishing to pub.dev makes this version publicly downloadable; later fixes require a new package version.
+Version 0.4.0 is a public preview package intended for initial integration testing. The package archive includes the bridge, native source snapshots, sample and license. The source repository is [public on GitHub](https://github.com/codel00ps/linkbud-flutter-sdk). Later package fixes require a new version; they do not change the already published 0.4.0 archive.
 
 To make a local distribution from the repository root:
 
@@ -108,7 +131,7 @@ The archive includes native sources and their manifest, the bridge, sample and l
 
 ## Basic analytics
 
-The current native SDK persists a random per-journey event ID and sends it on direct link resolution, including OS-native opens that bypass web redirects. Restart, network retry and login revalidation reuse the ID. Successful deferred exchanges are counted once by the server. No installation identifier is sent for direct-open analytics. An SDK open means successful resolution, potentially before login; acknowledgment/navigation remains local. Upgrade the backend with the analytics migration before using these counts. Older servers ignore the additive request fields, and old SDKs continue resolving without direct-open counts. Read [the analytics contract](../linkbud/docs/analytics.md) for privacy, 30-day retention, public-client trust limits and queue operations.
+The current native SDK persists a random per-journey event ID and sends it on direct link resolution, including OS-native opens that bypass web redirects. Restart, network retry and login revalidation reuse the ID. Successful deferred exchanges are counted once by the server. No installation identifier is sent for direct-open analytics. An SDK open means successful resolution, potentially before login; acknowledgment/navigation remains local. Upgrade the backend with the analytics migration before using these counts. Older servers ignore the additive request fields, and old SDKs continue resolving without direct-open counts. Read [the analytics contract](https://github.com/codel00ps/linkbud.io/blob/master/docs/analytics.md) for privacy, 30-day retention, public-client trust limits and queue operations.
 
 
 ## General link analytics (v2 preview)
