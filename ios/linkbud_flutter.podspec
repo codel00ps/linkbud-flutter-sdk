@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = 'linkbud_flutter'
-  s.version = '0.4.0'
+  s.version = '0.4.1'
   s.summary = 'Flutter bridge to the LinkBud native SDK preview.'
   s.description = 'Environment-scoped navigation hints and explicit recovery, using the unchanged native SDK sources.'
   s.homepage = 'https://github.com/codel00ps/linkbud-flutter-sdk'

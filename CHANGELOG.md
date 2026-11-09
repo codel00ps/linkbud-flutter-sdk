@@ -1,3 +1,10 @@
+# 0.4.1 preview · unpublished
+
+- Match the native SDK minimums: Android API 23+ and iOS 15+. Set the plugin and sample Android minimum explicitly to 23; all Android hosts must enable core library desugaring, including apps with a minimum API of 26 or higher.
+- Support Flutter 3.32 / Dart 3.8 and the AGP 8 Kotlin Gradle Plugin alongside AGP 9 built-in Kotlin hosts. Use Flutter 3.32.8 for API 23 deployment; newer Flutter engines may require a higher Android API independently of this plugin.
+- Use the Flutter 3.32-compatible application-delegate lifecycle in the iOS sample, retaining the iOS 15.0 deployment target.
+- Bundle the Android storage hardening: reject further state operations after a write failure until the app restarts, preventing use of unpersisted navigation state or installation identity.
+
 # 0.4.0 preview
 
 - Add optional public `routePrefix` configuration and strict six-character short-path resolution.
