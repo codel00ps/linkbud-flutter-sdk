@@ -10,10 +10,21 @@ internal interface PendingStore {
 }
 
 internal class State(private val store: PendingStore) {
-    var json: JSONObject = store.read()?.let { JSONObject(it) } ?: JSONObject()
-        private set
+    private var storageFailed = false
+    val json: JSONObject = store.read()?.let { JSONObject(it) } ?: JSONObject()
+        get() {
+            check(!storageFailed) { "LinkBud storage failed; recreate the client before retrying" }
+            return field
+        }
 
-    fun save() = store.write(json.toString())
+    fun save() {
+        try { store.write(json.toString()) }
+        catch (failure: Exception) {
+            // Mutations may not have reached disk. Never expose or reuse this in-memory state.
+            storageFailed = true
+            throw failure
+        }
+    }
     fun installationId(): String {
         if (!json.has("installation_id")) {
             json.put("installation_id", UUID.randomUUID().toString().replace("-", "") + UUID.randomUUID().toString().replace("-", ""))

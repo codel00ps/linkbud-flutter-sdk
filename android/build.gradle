@@ -1,19 +1,24 @@
 group = 'dev.linkbud.flutter'
-version = '0.4.0'
+version = '0.4.1'
 
 buildscript {
     repositories { google(); mavenCentral() }
     dependencies {
-        classpath 'com.android.tools.build:gradle:9.0.1'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.3.20'
+        classpath 'com.android.tools.build:gradle:8.13.2'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.21'
     }
 }
 apply plugin: 'com.android.library'
+// AGP 9 supplies built-in Kotlin; older hosts still need the Kotlin Android plugin.
+if (extensions.findByName('kotlin') == null) {
+    apply plugin: 'org.jetbrains.kotlin.android'
+}
 
 def libraryExtension = extensions.getByType(com.android.build.api.dsl.LibraryExtension)
 libraryExtension.namespace = 'dev.linkbud.flutter'
 libraryExtension.compileSdk = 36
-libraryExtension.defaultConfig.minSdk = 26
+libraryExtension.defaultConfig.minSdk = 23
+libraryExtension.compileOptions.coreLibraryDesugaringEnabled = true
 libraryExtension.compileOptions.sourceCompatibility = JavaVersion.VERSION_17
 libraryExtension.compileOptions.targetCompatibility = JavaVersion.VERSION_17
 kotlin {
@@ -22,4 +27,7 @@ kotlin {
     }
 }
 repositories { google(); mavenCentral() }
-dependencies { implementation 'com.android.installreferrer:installreferrer:2.2' }
+dependencies {
+    implementation 'com.android.installreferrer:installreferrer:2.2'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+}
