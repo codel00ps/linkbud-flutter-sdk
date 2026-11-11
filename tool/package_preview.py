@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a self-contained local preview archive after verifying native source parity."""
+"""Build a self-contained local candidate archive after verifying native source parity."""
 import argparse
 from pathlib import Path
 import subprocess
