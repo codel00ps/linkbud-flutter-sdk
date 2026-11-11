@@ -1,4 +1,15 @@
-# 0.4.1 preview · unpublished
+# 1.0.0 — November 11, 2026
+
+- Establish the stable 1.x Dart API baseline without changing the 0.4.1 bridge/runtime contract.
+- Align pubspec, Android, CocoaPods and example versions to 1.0.0.
+- Verify bundled sources against the native Android/iOS 1.0.0 sources; keep the distribution self-contained.
+- Document supported toolchains, required Android desugaring, explicit iOS recovery, privacy and host-owned authentication/navigation responsibilities.
+- Record owner-confirmed real-device acceptance, keeping the sample's simulated login clearly distinguished.
+- Make the Android example respect the Flutter engine minimum and remove stale generated Swift-package references from the iOS example.
+
+Earlier entries describe historical preview milestones, not the current release status.
+
+# 0.4.1 preview
 
 - Match the native SDK minimums: Android API 23+ and iOS 15+. Set the plugin and sample Android minimum explicitly to 23; all Android hosts must enable core library desugaring, including apps with a minimum API of 26 or higher.
 - Support Flutter 3.32 / Dart 3.8 and the AGP 8 Kotlin Gradle Plugin alongside AGP 9 built-in Kotlin hosts. Use Flutter 3.32.8 for API 23 deployment; newer Flutter engines may require a higher Android API independently of this plugin.

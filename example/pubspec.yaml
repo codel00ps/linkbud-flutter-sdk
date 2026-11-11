@@ -1,6 +1,6 @@
 name: linkbud_flutter_example
-description: Demonstrates the LinkBud native Flutter bridge preview.
-version: 0.1.0+1
+description: Demonstrates the LinkBud native Flutter bridge.
+version: 1.0.0+2
 publish_to: none
 environment:
   sdk: '>=3.8.0 <4.0.0'

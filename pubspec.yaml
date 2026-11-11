@@ -1,6 +1,6 @@
 name: linkbud_flutter
 description: Flutter plugin for LinkBud app-link resolution and explicit recovery on Android and iOS.
-version: 0.4.1
+version: 1.0.0
 repository: https://github.com/codel00ps/linkbud-flutter-sdk
 environment:
   sdk: '>=3.8.0 <4.0.0'

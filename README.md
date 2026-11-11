@@ -1,22 +1,22 @@
-# LinkBud Flutter SDK · 0.4.1 preview (unpublished)
+# LinkBud Flutter SDK · 1.0.0
 
 A Flutter plugin for Android and iOS. Native code owns URL/payload validation, Play referral exchange, manual iOS recovery, installation identity, backup-excluded pending storage, retry deadlines and acknowledgment history. Dart does not implement a second referral protocol or store journey state.
 
-Version 0.4.0 is available as a [preview package on pub.dev](https://pub.dev/packages/linkbud_flutter) for integration testing. This working tree prepares 0.4.1 with the same platform minimums as the native SDKs: Android API 23+ and iOS 15+. Version 0.4.1 has not been published. Signed-device, store-install and real host-authentication acceptance for the native SDKs and Flutter host remain open. It never promises automatic iOS recovery. Android and iOS setup, recovery behavior and acceptance evidence stay separate.
+Version 1.0.0 establishes the stable public API. Android API 23+ and iOS 15+ remain the native minimums. The owner confirmed real-device cold/warm links, login/restart recovery, a fresh Google Play install/referrer journey, and Flutter on Android and iOS passed on November 11, 2026. These are owner-reported integration results, distinct from automated candidate checks. iOS recovery remains explicit; there is no automatic App Store recovery.
 
 ## Install from pub.dev
 
-From your Flutter app directory, run:
+Run from your Flutter app directory:
 
 ```sh
-flutter pub add linkbud_flutter:^0.4.0
+flutter pub add linkbud_flutter:^1.0.0
 ```
 
 Or add the dependency in `pubspec.yaml` and run `flutter pub get`:
 
 ```yaml
 dependencies:
-  linkbud_flutter: ^0.4.0
+  linkbud_flutter: ^1.0.0
 ```
 
 Import the package in Dart:
@@ -32,21 +32,21 @@ The package includes the Android and iOS native source snapshots. Flutter apps s
 | Component | Baseline |
 | --- | --- |
 | Flutter / Dart | Flutter >=3.32 and Dart >=3.8 <4; API 23 verification toolchain: Flutter 3.32.8 / Dart 3.8.1 |
-| Android | Upcoming 0.4.1 matches native Android API 23+; published 0.4.0 requires API 26+. Compile/target SDK 36, JDK 17, Gradle 8.14.6, AGP 8.13.2, Kotlin 2.2.21, Play Install Referrer 2.2; sample uses NDK 29.0.14206865 |
+| Android | Android API 23+ at the plugin level; the Flutter engine may require a newer OS. Compile/target SDK 36, JDK 17, Gradle 8.14.6, AGP 8.13.2, Kotlin 2.2.21, Play Install Referrer 2.2; sample uses NDK 29.0.14206865 |
 | iOS | iOS 15+, Swift 5.9 language mode, Xcode 15+; actual checked Xcode version is recorded in the roadmap |
-| Native SDK sources | LinkBud Android 0.4.1 preview and iOS 0.4.0, tracked snapshots from the sibling native repositories |
+| Native SDK sources | LinkBud Android 1.0.0 and iOS 1.0.0, tracked snapshots from the sibling native repositories |
 | Runtime ownership | One engine, one main-isolate client, one fixed configuration per app process |
 
-The plugin and sample set Android `minSdk` to 23 explicitly. Deploying to API 23 also requires a Flutter engine that supports that OS: use Flutter 3.32.8. Newer Flutter releases impose their own higher minimum ([Flutter 3.47 requires API 24+](https://docs.flutter.dev/reference/supported-platforms)), which a plugin cannot lower. The Android bridge supports both the Kotlin Gradle Plugin on AGP 8 and built-in Kotlin on AGP 9 hosts. All iOS declarations (CocoaPods, Swift Package Manager and sample deployment targets) remain at 15.0, matching the native iOS SDK.
+The plugin sets Android `minSdk` to 23. The sample uses the higher of API 23 and the selected Flutter engine minimum. Deploying to API 23 also requires a Flutter engine that supports that OS: use Flutter 3.32.8. Newer Flutter releases impose their own higher minimum ([Flutter 3.47 requires API 24+](https://docs.flutter.dev/reference/supported-platforms)), which a plugin cannot lower. The Android bridge supports both the Kotlin Gradle Plugin on AGP 8 and built-in Kotlin on AGP 9 hosts. All iOS declarations (CocoaPods, Swift Package Manager and sample deployment targets) remain at 15.0, matching the native iOS SDK.
 
-Other Flutter/Xcode versions are unverified. No web, desktop, background isolate or multi-engine API is offered. A second engine receives `engine_in_use`; changing configuration receives `configuration_locked`. Use separate application IDs/build flavors for environments. Restart the app process to switch configuration.
+Candidate checks cover Flutter 3.32.8 / Dart 3.8.1 and Flutter 3.47.9 / Dart 3.13.7 with Xcode 27.2. Other toolchain combinations are not claimed as verified. No web, desktop, background isolate or multi-engine API is offered. A second engine receives `engine_in_use`; changing configuration receives `configuration_locked`. Use separate application IDs/build flavors for environments. Restart the app process to switch configuration.
 
 ## Local development
 
 From the LinkBud root:
 
 ```sh
-python3 flutter-sdk/tool/prepare_native.py --verify
+python3 linkbud-flutter-sdk/tool/prepare_native.py --verify
 cd linkbud-flutter-sdk
 flutter pub get
 flutter test
@@ -55,9 +55,9 @@ flutter analyze
 
 The preparation command copies the exact native source files into tracked snapshot directories inside the plugin and writes their SHA-256 manifest. The bridge compiles these files directly; never edit the staged copies. Run it again after changing either native SDK. `--check` fails for missing, extra or altered source files. Run `--check` when both sibling native repositories are available to verify upstream parity. Run `--verify` in an independent Flutter checkout to verify bundled hashes without those repositories. The published Flutter package is self-contained and does not require users to install the standalone native SDK packages.
 
-Add a local `path:` dependency on this directory (as the sample does). For iOS, the package supplies both a CocoaPods specification and a Swift Package Manager manifest; CocoaPods is the checked integration. The committed native snapshots are ready to build without the sibling repositories. Refresh them with `tool/prepare_native.py` only after native changes; `--android-sdk` and `--ios-sdk` accept alternate checkout paths. For the upcoming 0.4.1, set the host minimum Android SDK to 23 and iOS deployment target to 15.0, and use the Android toolchain versions above. CocoaPods must be installed to build the iOS sample with the documented setup.
+Add a local `path:` dependency on this directory (as the sample does). For iOS, the package supplies both a CocoaPods specification and a Swift Package Manager manifest; CocoaPods is the checked integration. The committed native snapshots are ready to build without the sibling repositories. The example starts from a CocoaPods-compatible Xcode project without references to ungenerated Swift packages; newer Flutter tools can migrate their own generated integration. Refresh them with `tool/prepare_native.py` only after native changes; `--android-sdk` and `--ios-sdk` accept alternate checkout paths. Set the host minimum Android SDK to 23 and iOS deployment target to 15.0, and use the Android toolchain versions above. CocoaPods must be installed to build the iOS sample with the documented setup.
 
-For 0.4.1, enable core library desugaring in every Android host app module, even when the app's minimum API is 26 or higher. The plugin's AAR metadata enforces this requirement. Desugaring supplies the missing Java APIs on API 23–25. The plugin configures its own Android library, but that setting is not applied to the consuming app:
+Enable core library desugaring in every Android host app module, even when the app's minimum API is 26 or higher. The plugin's AAR metadata enforces this requirement. Desugaring supplies the missing Java APIs on API 23–25. The plugin configures its own Android library, but that setting is not applied to the consuming app:
 
 ```kotlin
 // app/build.gradle.kts
@@ -136,24 +136,24 @@ The integration smoke test exercises the actual native channel with invalid link
 
 ## Packaging and release ownership
 
-Version 0.4.0 is a public preview package intended for initial integration testing. The package archive includes the bridge, native source snapshots, sample and license. The source repository is [public on GitHub](https://github.com/codel00ps/linkbud-flutter-sdk). Later package fixes require a new version; they do not change the already published 0.4.0 archive.
+Version 1.0.0 establishes the public 1.x Dart API baseline while retaining the existing native protocol, persisted journeys and host responsibilities. Compatible fixes and additive APIs use patch/minor releases; incompatible public API changes require a major version. The package is self-contained: users do not need sibling SDK repositories or separate native package installations. The source repository is [public on GitHub](https://github.com/codel00ps/linkbud-flutter-sdk). Never replace an existing published archive or move a release tag.
 
 To make a local distribution from the repository root:
 
 ```sh
 python3 linkbud-flutter-sdk/tool/prepare_native.py
 python3 linkbud-flutter-sdk/tool/prepare_native.py --check
-python3 linkbud-flutter-sdk/tool/package_preview.py /tmp/linkbud-flutter-0.4.1.tar.gz
+python3 linkbud-flutter-sdk/tool/package_preview.py /tmp/linkbud-flutter-1.0.0-candidate.tar.gz
 ```
 
-The archive includes native sources and their manifest, the bridge, sample and license. It excludes caches, local settings and build outputs. Unpack it into a fresh directory, run `flutter pub get`, `flutter test` and build both sample hosts before distribution. The 0.4.0 preview is intended for package integration testing; signed device acceptance remains pending and is part of the follow-up validation.
+The archive includes native sources and their manifest, the bridge, sample and license. It excludes caches, local settings and build outputs. Unpack it into a fresh directory, run `flutter pub get`, `flutter test` and build both sample hosts before distribution. The legacy name `package_preview.py` is retained for script compatibility; it creates a local candidate archive and never publishes. Before release, run `flutter pub publish --dry-run`, review the exact file list, and verify both host builds from an extracted archive. Publication and clean public-registry installation verification are separate steps.
 
 ## Basic analytics
 
 The current native SDK persists a random per-journey event ID and sends it on direct link resolution, including OS-native opens that bypass web redirects. Restart, network retry and login revalidation reuse the ID. Successful deferred exchanges are counted once by the server. No installation identifier is sent for direct-open analytics. An SDK open means successful resolution, potentially before login; acknowledgment/navigation remains local. Upgrade the backend with the analytics migration before using these counts. Older servers ignore the additive request fields, and old SDKs continue resolving without direct-open counts. Read [the analytics contract](https://github.com/codel00ps/linkbud.io/blob/master/docs/analytics.md) for privacy, 30-day retention, public-client trust limits and queue operations.
 
 
-## General link analytics (v2 preview)
+## General link analytics (v2)
 
 The SDK requests v2 analytics on direct/recovered resolution. The server returns an optional,
 short-lived opaque reporting receipt. Call the existing `acknowledge` only after actual authorized
@@ -175,11 +175,11 @@ behavior and store/device acceptance limits remain unchanged. Rebuild host apps 
 updating LinkBud alone cannot add destination reporting to an installed app.
 
 
-## Testing and Live · 0.4.0 preview
+## Testing and Live
 
 Configure new integrations with testing or live. Staging is retired. Development and Production are accepted legacy aliases for Testing and Live respectively, including URL parsing. The backend echoes the requested API environment for older SDK payload validation. Association documents and Android manifest snippets include both canonical and legacy paths. Refresh app configuration/manifest when adopting new URLs; existing installed Android builds with only a development path filter cannot receive testing URLs until rebuilt. Keep legacy SDK configuration until outstanding pending journeys finish; changing the configured environment changes the SDK storage namespace.
 
-## Short URLs · 0.4.0 preview
+## Short URLs
 
 Configure `routePrefix` with the environment’s immutable three-character Base62 value, without
 slashes. A short link is `https://LINK_HOST/Ab1/Cd34Ef`: prefix and code are case-sensitive.
@@ -197,3 +197,20 @@ identity and pending recovery; always resume/revalidate before authorizing navig
 responses include the same prefix/code context. Android still needs a matching Play installation;
 iOS still requires explicit code entry or reopening the original short link after installation.
 These source changes do not update Aurix or any installed build.
+
+## Privacy and host responsibilities
+
+Bundled native SDKs store pending journeys and a random installation identifier in app-private storage excluded from backup. Navigation hints, journey IDs and bounded reporting receipts are sent to the configured LinkBud origin. No management credential belongs in a mobile app. Hosts must review this behavior for Google Play Data safety and Apple App Privacy declarations, and must authenticate and authorize destinations themselves. iOS recovery requires explicit code entry or reopening the original link; no fingerprinting or silent clipboard reading is used. The example login is a simulation, not production authentication.
+
+## Build the standalone example
+
+Run dependency generation in the example itself before using `--no-pub`; resolving the package root alone does not generate the example's iOS plugin registrant.
+
+```sh
+cd example
+flutter pub get
+flutter build apk --release --no-pub
+flutter build ios --release --no-codesign --no-pub
+```
+
+The unsigned iOS result is a build check, not an installable App Store release. Use your own signing and real public environment configuration for device distribution.

@@ -17,3 +17,12 @@ example/android/local.properties
 **/.idea/
 **/*.iml
 **/*.log
+
+**/.kotlin/
+**/__pycache__/
+**/*.pyc
+**/*.jks
+**/*.keystore
+**/*.p12
+**/*.p8
+**/*.mobileprovision

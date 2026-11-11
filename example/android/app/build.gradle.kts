@@ -27,7 +27,7 @@ extensions.configure<com.android.build.api.dsl.ApplicationExtension> {
     }
     defaultConfig {
         applicationId = providers.gradleProperty("linkbudPackage").getOrElse("dev.linkbud.linkbud_flutter_example")
-        minSdk = 23
+        minSdk = maxOf(23, flutter.minSdkVersion)
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName

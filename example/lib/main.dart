@@ -151,7 +151,7 @@ class _LinkBudExampleState extends State<LinkBudExample> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('LinkBud Flutter preview')),
+    appBar: AppBar(title: const Text('LinkBud Flutter sample')),
     body: ListView(
       padding: const EdgeInsets.all(24),
       children: [
