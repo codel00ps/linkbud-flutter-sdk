@@ -13,19 +13,21 @@ data class LinkBudConfig(val origin: String, val applicationId: String, val envi
         require(uri.scheme == "https" && uri.host != null && uri.rawUserInfo == null && uri.port == -1 &&
             uri.rawQuery == null && uri.rawFragment == null && uri.rawPath in listOf("", "/")) { "Use a root HTTPS origin" }
         require(applicationId.matches(Regex("[a-z0-9]{26}")) && sdkId.matches(Regex("[a-z0-9]{26}")))
-        require(environment in listOf("testing", "live", "development", "production"))
+        require(environment == "default")
         require(routePrefix == null || routePrefix.matches(Regex("[A-Za-z0-9]{3}")))
     }
     internal val base get() = origin.trimEnd('/')
     internal val prefix get() = "/l/$applicationId/$environment/"
 
+    /** Checks URL ownership without resolving a destination or changing stored state. */
+    fun canHandleUrl(url: String): Boolean = runCatching { reference(url) }.isSuccess
+
     internal fun slug(url: String): String {
         val uri = URI(url)
-        require(uri.scheme == "https" && uri.host == URI(origin).host && uri.port == -1 && uri.rawUserInfo == null)
-        val canonical = when (environment) { "development" -> "testing"; "production" -> "live"; else -> environment }
-        val alias = if (canonical == "testing") "development" else "production"
-        val matched = listOf("/l/$applicationId/$canonical/", "/l/$applicationId/$alias/").firstOrNull { uri.rawPath.startsWith(it) }
-            ?: throw IllegalArgumentException("Link is outside this application/environment")
+        require(uri.scheme == "https" && uri.host == URI(origin).host && uri.port == -1 && uri.rawUserInfo == null &&
+            uri.rawQuery == null && uri.rawFragment == null)
+        val matched = prefix
+        require(uri.rawPath.startsWith(matched)) { "Link is outside this application" }
         val slug = uri.rawPath.removePrefix(matched)
         require(slug.matches(Regex("[A-Za-z0-9]{16}"))) { "Link is outside this application/environment" }
         return slug

@@ -1,15 +1,27 @@
 PODS:
   - Flutter (1.0.0)
+  - integration_test (0.0.1):
+    - Flutter
+  - linkbud_flutter (1.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
+  - linkbud_flutter (from `.symlinks/plugins/linkbud_flutter/ios`)
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
+  linkbud_flutter:
+    :path: ".symlinks/plugins/linkbud_flutter/ios"
 
 SPEC CHECKSUMS:
-  Flutter: 71a624a5bc0c04062bf19101d501e466baf2fb47
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
+  linkbud_flutter: f107ac0c24ed2c44814fc30bacadf43edff3461f
 
 PODFILE CHECKSUM: 288656d4464589360115d6f81dd5d8f559352730
 

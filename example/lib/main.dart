@@ -58,11 +58,15 @@ class _LinkBudExampleState extends State<LinkBudExample> {
             ),
             environment: String.fromEnvironment(
               'LINKBUD_ENVIRONMENT',
-              defaultValue: 'development',
+              defaultValue: 'default',
             ),
             sdkId: String.fromEnvironment(
               'LINKBUD_SDK_ID',
               defaultValue: 'bbbbbbbbbbbbbbbbbbbbbbbbbb',
+            ),
+            routePrefix: String.fromEnvironment(
+              'LINKBUD_ROUTE_PREFIX',
+              defaultValue: 'Ab1',
             ),
             appleAppId: String.fromEnvironment(
               'LINKBUD_APPLE_APP_ID',
@@ -151,7 +155,7 @@ class _LinkBudExampleState extends State<LinkBudExample> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('LinkBud Flutter preview')),
+    appBar: AppBar(title: const Text('LinkBud Flutter sample')),
     body: ListView(
       padding: const EdgeInsets.all(24),
       children: [

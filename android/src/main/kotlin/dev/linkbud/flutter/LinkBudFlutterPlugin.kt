@@ -56,7 +56,15 @@ class LinkBudFlutterPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Act
     override fun onDetachedFromActivity() = detachActivity()
 
     override fun onNewIntent(intent: Intent): Boolean {
-        if (intent.action != Intent.ACTION_VIEW || intent.dataString == null) return false
+        val url = intent.dataString
+        if (intent.action != Intent.ACTION_VIEW || url == null) return false
+        val config = if (sdk != null) sharedConfiguration else null
+        if (config == null) {
+            // Retain a possible cold link, but ownership is unknown until Dart configures the SDK.
+            if (initialIntent == null) initialIntent = intent
+            return false
+        }
+        if (!config.canHandleUrl(url)) return false
         activity?.activity?.intent = intent
         val client = sdk
         if (!started || client == null) {
@@ -83,6 +91,7 @@ class LinkBudFlutterPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Act
                     sharedConfiguration = config
                     owner = this
                 }
+                if (initialIntent?.dataString?.let { config.canHandleUrl(it) } != true) initialIntent = null
                 result.success(null)
             } catch (_: Exception) { result.error("invalid_configuration", "Use valid public environment identifiers and a root HTTPS origin", null) }
             return
@@ -95,9 +104,12 @@ class LinkBudFlutterPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Act
                     started = true
                     val intent = initialIntent
                     initialIntent = null
-                    if (intent != null) client.handleIntent(intent, complete) else client.resume(complete)
+                    if (intent?.dataString?.let { sharedConfiguration?.canHandleUrl(it) } == true) {
+                        client.handleIntent(intent, complete)
+                    } else client.resume(complete)
                 }
                 "handleUrl" -> client.handleIntent(Intent(Intent.ACTION_VIEW, Uri.parse(required(call, "url"))), complete)
+                "reopen" -> client.reopen(required(call, "url"), complete)
                 "resume" -> client.resume(complete)
                 "pending" -> client.pending(complete)
                 "recover" -> result.success(mapOf("status" to "rejected", "reason" to "unsupported_recovery"))

@@ -34,6 +34,9 @@ class LinkBud(context: Context, config: LinkBudConfig) {
         execute(callback) { engine.receiveUrl(url) }
     }
 
+    /** Explicitly reopen an acknowledged URL as a fresh, revalidated journey. Never use for duplicate OS callbacks. */
+    fun reopen(url: String, callback: (LinkBudResult) -> Unit) = execute(callback) { engine.reopenUrl(url) }
+
     /** Call at launch, after login and when connectivity returns. Retryable supplies the earliest next attempt. */
     fun resume(callback: (LinkBudResult) -> Unit) {
         execute(callback) {

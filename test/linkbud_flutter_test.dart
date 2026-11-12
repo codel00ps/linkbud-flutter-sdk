@@ -8,7 +8,7 @@ void main() {
   const config = LinkBudConfiguration(
     origin: 'https://links.example.com',
     applicationId: 'aaaaaaaaaaaaaaaaaaaaaaaaaa',
-    environment: 'development',
+    environment: 'default',
     sdkId: 'bbbbbbbbbbbbbbbbbbbbbbbbbb',
     appleAppId: 'A1B2C3D4E5.dev.linkbud.sample',
   );
@@ -31,6 +31,7 @@ void main() {
 
   test('operations require initialization', () async {
     await expectLater(LinkBud.instance.pending(), throwsStateError);
+    await expectLater(LinkBud.instance.reopen('url'), throwsStateError);
   });
 
   test(
@@ -46,7 +47,7 @@ void main() {
     const shortConfig = LinkBudConfiguration(
       origin: 'https://links.example.com',
       applicationId: 'aaaaaaaaaaaaaaaaaaaaaaaaaa',
-      environment: 'testing',
+      environment: 'default',
       sdkId: 'bbbbbbbbbbbbbbbbbbbbbbbbbb',
       routePrefix: 'Ab1',
     );
@@ -99,11 +100,47 @@ void main() {
     expect(calls.single.arguments, {'code': ' ABCD-EF01 '});
   });
 
+  test(
+    'explicit reopening delegates validation and preserves native outcomes',
+    () async {
+      const url = 'https://links.example.com/Ab1/Cd34Ef';
+      response = {
+        'status': 'pending',
+        'id': 'fresh-delivery',
+        'destination': '/welcome',
+        'expiresAt': '2026-11-12T12:00:00Z',
+      };
+      expect(
+        (await LinkBud.instance.reopen(url) as PendingDestination).id,
+        'fresh-delivery',
+      );
+      expect(calls.single.method, 'reopen');
+      expect(calls.single.arguments, {'url': url});
+      response = {'status': 'rejected', 'reason': 'pending_destination_exists'};
+      expect(
+        (await LinkBud.instance.reopen(url) as LinkBudRejected).reason,
+        'pending_destination_exists',
+      );
+      response = {'status': 'alreadyAcknowledged'};
+      expect(
+        await LinkBud.instance.handleUrl(url),
+        isA<LinkBudAlreadyAcknowledged>(),
+      );
+      expect(calls.last.method, 'handleUrl');
+    },
+  );
+
   test('destination failures accept only fixed generic reasons', () async {
     response = true;
-    expect(await LinkBud.instance.destinationFailed('delivery-id', 'permission'), true);
+    expect(
+      await LinkBud.instance.destinationFailed('delivery-id', 'permission'),
+      true,
+    );
     expect(calls.single.method, 'destinationFailed');
-    expect(calls.single.arguments, {'id': 'delivery-id', 'reason': 'permission'});
+    expect(calls.single.arguments, {
+      'id': 'delivery-id',
+      'reason': 'permission',
+    });
     await expectLater(
       LinkBud.instance.destinationFailed('delivery-id', 'private app details'),
       throwsArgumentError,

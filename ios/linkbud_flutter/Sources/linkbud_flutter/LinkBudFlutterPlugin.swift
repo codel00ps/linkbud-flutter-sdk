@@ -7,6 +7,7 @@ public final class LinkBudFlutterPlugin: NSObject, FlutterPlugin {
     private static var sharedConfiguration: [String: String]?
     private let channel: FlutterMethodChannel
     private var sdk: LinkBud?
+    private var configuration: LinkBudConfiguration?
     private var initialURL: URL?
     private var started = false
     private var operating = false
@@ -24,6 +25,12 @@ public final class LinkBudFlutterPlugin: NSObject, FlutterPlugin {
     public func application(_ application: UIApplication, continue userActivity: NSUserActivity,
                             restorationHandler: @escaping ([Any]) -> Void) -> Bool {
         guard userActivity.activityType == NSUserActivityTypeBrowsingWeb, let url = userActivity.webpageURL else { return false }
+        guard let configuration else {
+            // Retain a possible cold link without claiming ownership before Dart configuration.
+            if initialURL == nil { initialURL = url }
+            return false
+        }
+        guard configuration.canHandle(url: url) else { return false }
         guard started, let sdk else {
             if initialURL == nil { initialURL = url }
             return true
@@ -60,16 +67,18 @@ public final class LinkBudFlutterPlugin: NSObject, FlutterPlugin {
                     let config = try LinkBudConfiguration(origin: origin, applicationID: args["applicationId"] ?? "",
                         environment: args["environment"] ?? "", sdkID: args["sdkId"] ?? "", appleAppID: args["appleAppId"] ?? "", routePrefix: args["routePrefix"])
                     sdk = try Self.sharedSDK ?? LinkBud(configuration: config)
+                    configuration = config
                     Self.sharedSDK = sdk
                     Self.sharedConfiguration = args
                     Self.owner = self
                 }
+                if let initialURL, configuration?.canHandle(url: initialURL) != true { self.initialURL = nil }
                 result(nil)
             } catch { result(FlutterError(code: "invalid_configuration_or_storage", message: "Check environment identifiers, HTTPS origin and local storage", details: nil)) }
             return
         }
         guard let sdk else { result(FlutterError(code: "not_initialized", message: "Initialize LinkBud first", details: nil)); return }
-        guard ["start", "handleUrl", "resume", "pending", "recover", "acknowledge", "destinationFailed"].contains(call.method) else {
+        guard ["start", "handleUrl", "reopen", "resume", "pending", "recover", "acknowledge", "destinationFailed"].contains(call.method) else {
             result(FlutterMethodNotImplemented); return
         }
         guard !operating else {
@@ -84,14 +93,15 @@ public final class LinkBudFlutterPlugin: NSObject, FlutterPlugin {
             switch call.method {
             case "start":
                 let value: LinkBudResult
-                if let coldURL { value = await sdk.handle(url: coldURL) }
+                if let coldURL, configuration?.canHandle(url: coldURL) == true { value = await sdk.handle(url: coldURL) }
                 else { value = await sdk.resume() }
                 result(encode(value))
-            case "handleUrl":
+            case "handleUrl", "reopen":
                 guard let raw = args["url"], let url = URL(string: raw) else {
                     result(encode(.rejected(reason: "invalid_link"))); return
                 }
-                result(encode(await sdk.handle(url: url)))
+                if call.method == "reopen" { result(encode(await sdk.reopen(url: url))) }
+                else { result(encode(await sdk.handle(url: url))) }
             case "resume": result(encode(await sdk.resume()))
             case "pending": result(encode(await sdk.pending()))
             case "recover": result(encode(await sdk.recover(code: args["code"] ?? "")))

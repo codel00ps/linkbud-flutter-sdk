@@ -1,10 +1,10 @@
 {
-  "android/src/main/kotlin/dev/linkbud/sdk/LinkBud.kt": "2487702f61f8fabaa81b7180f37995b4aefcb943a28c07f33957df1fccdb3920",
+  "android/src/main/kotlin/dev/linkbud/sdk/LinkBud.kt": "70f9e1f8ca386bf67cd8dec0932e4af0370dc59aee1b8e7445b3e29d985dff12",
   "android/src/main/kotlin/dev/linkbud/sdk/PendingStore.kt": "093ae45529351884c02723b0a68db17e79d304898dc85cb955f88589813c291f",
-  "android/src/main/kotlin/dev/linkbud/sdk/Protocol.kt": "178f93f16198af6906779d2de88a5e09f555a5b7ec698ed3a18ed4e4e5be986d",
-  "android/src/main/kotlin/dev/linkbud/sdk/ResolutionEngine.kt": "1c3229d4cae487e47a25df0f9edf4ca2a91dd6a8a814503af9e2946fbb8e963c",
+  "android/src/main/kotlin/dev/linkbud/sdk/Protocol.kt": "c3127d84e90216eb64c4a85d6b3518275a9faa81c1a2df75745b34aec9a789e2",
+  "android/src/main/kotlin/dev/linkbud/sdk/ResolutionEngine.kt": "865ba8c7237b973e2a2d46c7f5853e62d84e3d1ea1f109819d13653113560dd3",
   "ios/linkbud_flutter/Sources/linkbud_flutter/Native/LinkBud.swift": "669d0179c56c6fcc00027844ff23ae6a3f4fdb5fd249f14e0200d7073565d383",
-  "ios/linkbud_flutter/Sources/linkbud_flutter/Native/Protocol.swift": "b0db8a69a122e26a88a95434cf62a8c16e056571533e0c03d87d556f38fde4ff",
+  "ios/linkbud_flutter/Sources/linkbud_flutter/Native/Protocol.swift": "682ad8fb1e6d4cb5b6714312e2ef1b72cbf55862f678274c4badec493dc0aed2",
   "ios/linkbud_flutter/Sources/linkbud_flutter/Native/Storage.swift": "951ee87326e3e9bfaae4e04c0b3f719532a88ad3154a7c72ebc4766ab294cccf",
   "ios/linkbud_flutter/Sources/linkbud_flutter/Native/Transport.swift": "6d2a93810bd18de7fd77f1fe2db5f16424e11240599b13f1adaa84ca287d34bc"
 }
