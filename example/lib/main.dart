@@ -58,11 +58,15 @@ class _LinkBudExampleState extends State<LinkBudExample> {
             ),
             environment: String.fromEnvironment(
               'LINKBUD_ENVIRONMENT',
-              defaultValue: 'development',
+              defaultValue: 'default',
             ),
             sdkId: String.fromEnvironment(
               'LINKBUD_SDK_ID',
               defaultValue: 'bbbbbbbbbbbbbbbbbbbbbbbbbb',
+            ),
+            routePrefix: String.fromEnvironment(
+              'LINKBUD_ROUTE_PREFIX',
+              defaultValue: 'Ab1',
             ),
             appleAppId: String.fromEnvironment(
               'LINKBUD_APPLE_APP_ID',

@@ -14,8 +14,12 @@ void main() {
       const config = LinkBudConfiguration(
         origin: 'https://links.example.com',
         applicationId: 'aaaaaaaaaaaaaaaaaaaaaaaaaa',
-        environment: 'development',
+        environment: 'default',
         sdkId: 'bbbbbbbbbbbbbbbbbbbbbbbbbb',
+        routePrefix: String.fromEnvironment(
+          'LINKBUD_ROUTE_PREFIX',
+          defaultValue: 'Ab1',
+        ),
         appleAppId: 'A1B2C3D4E5.dev.linkbud.sample',
       );
       // Android may return retryable/unavailable for Play services on an emulator.
@@ -28,6 +32,10 @@ void main() {
       ]) {
         expect(
           (await sdk.handleUrl(url) as LinkBudRejected).reason,
+          'invalid_link',
+        );
+        expect(
+          (await sdk.reopen(url) as LinkBudRejected).reason,
           'invalid_link',
         );
       }
@@ -52,7 +60,8 @@ void main() {
       expect(await sdk.pending(), isA<LinkBudEmpty>());
       app.main();
       await tester.pumpAndSettle();
-      expect(find.text('LinkBud Flutter preview'), findsOneWidget);
+      expect(find.text('LinkBud Flutter sample'), findsOneWidget);
+      expect(find.textContaining('Operation failed.'), findsNothing);
       expect(
         find.text(
           'Demo login only. Real authentication and route authorization belong to the host app.',

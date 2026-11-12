@@ -10,6 +10,13 @@ SOURCE = Path(__file__).resolve().parents[2]
 
 
 class DistributionTests(unittest.TestCase):
+    def test_native_url_vectors_match_when_sibling_checkouts_are_available(self):
+        android = SOURCE.parent / 'linkbud-android-sdk/sdk/src/test/resources/link-url-vectors.json'
+        ios = SOURCE.parent / 'linkbud-ios-sdk/Tests/LinkBudTests/Fixtures/link-url-vectors.json'
+        if not android.exists() or not ios.exists():
+            self.skipTest('Native test fixtures are only available in a multi-SDK checkout')
+        self.assertEqual(json.loads(android.read_text()), json.loads(ios.read_text()))
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name) / 'standalone-flutter'

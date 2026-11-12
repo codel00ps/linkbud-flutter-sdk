@@ -15,12 +15,17 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
+
+    plugins {
+        id("com.android.application") version providers.gradleProperty("linkbudAgpVersion").getOrElse("8.13.2")
+        id("org.jetbrains.kotlin.android") version "2.2.21"
+    }
 }
 
 plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
-    id("com.android.application") version "8.13.2" apply false
-    id("org.jetbrains.kotlin.android") version "2.2.21" apply false
+    id("com.android.application") apply false
+    id("org.jetbrains.kotlin.android") apply false
 }
 
 include(":app")

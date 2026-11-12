@@ -22,6 +22,15 @@ void main() {
             const MethodChannel('dev.linkbud/flutter'),
             (call) async {
               calls.add(call.method);
+              if (call.method == 'initialize') {
+                expect(
+                  (call.arguments as Map)['routePrefix'],
+                  const String.fromEnvironment(
+                    'LINKBUD_ROUTE_PREFIX',
+                    defaultValue: 'Ab1',
+                  ),
+                );
+              }
               return switch (call.method) {
                 'initialize' => null,
                 'acknowledge' => true,

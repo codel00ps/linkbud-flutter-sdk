@@ -1,3 +1,16 @@
+# 1.0.1 — November 12, 2026
+
+- Align SDK/sample release metadata to 1.0.1 and configuration to the backend's single `default` environment. Retired environment names must be migrated before rebuilding.
+
+- Make the sample select AGP 8 or 9, retain an early Kotlin version declaration and apply KGP only when built-in Kotlin is absent. Keep Flutter's legacy DSL compatibility enabled for AGP 9.
+- Build debug iOS simulators for the Mac's native architecture (normalizing arm64e to arm64), avoiding older Flutter's multi-architecture `lipo` failure with Xcode 27 while preserving device architectures.
+- Align SDK, CocoaPods and sample versions to 1.0.1; retain Flutter 3.32 / Dart 3.8, API 23 and iOS 15 support.
+- Configure short-link sample routing through `LINKBUD_ROUTE_PREFIX` on both native platforms and retain Android legacy filters.
+- Expose explicit `reopen` on both bridges; preserve duplicate-callback and pending-journey protection.
+- Check configured URL ownership before claiming OS events and ignore unrelated cold input at startup.
+- Document the public Dart API, fix analyzer style and sample labels, consolidate the historical changelog, and bundle integration/analytics guides.
+- Refresh bundled native sources and their hash manifest.
+
 # 1.0.0 — November 11, 2026
 
 - Establish the stable 1.x Dart API baseline without changing the 0.4.1 bridge/runtime contract.
@@ -28,8 +41,6 @@ Earlier entries describe historical preview milestones, not the current release 
 
 - Support Testing/Live and matching Development/Production URL aliases.
 - Reject retired Staging configuration; preserve strict application/environment isolation.
-
-# 0.3.0 preview · unpublished
 
 - General analytics v2: persistent destination outcomes, bounded offline retry, and fixed failure reasons.
 - Existing resolution and authentication contracts remain supported.

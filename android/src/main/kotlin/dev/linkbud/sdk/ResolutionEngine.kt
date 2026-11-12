@@ -86,13 +86,17 @@ internal class ResolutionEngine(
         val reference = try { config.reference(url) } catch (_: Exception) { return LinkBudResult.Rejected("invalid_link") }
         return enqueue(reference.first, reference.second)
     }
+    fun reopenUrl(url: String): LinkBudResult {
+        val reference = try { config.reference(url) } catch (_: Exception) { return LinkBudResult.Rejected("invalid_link") }
+        return enqueue(reference.first, reference.second, reopening = true)
+    }
     fun receiveReferrer(referrer: String): LinkBudResult {
         if (pending() != null || hasRequest()) return LinkBudResult.Rejected("pending_destination_exists")
         val token = try { referrerToken(referrer) } catch (_: Exception) { finishReferrer(); return LinkBudResult.Rejected("invalid_referrer") }
         if (token == null) { finishReferrer(); return LinkBudResult.Empty }
         return enqueue("token", token)
     }
-    private fun enqueue(kind: String, value: String): LinkBudResult {
+    private fun enqueue(kind: String, value: String, reopening: Boolean = false): LinkBudResult {
         state.pending(now())
         val existing = state.json.optJSONObject("request")
         if (existing != null && !Instant.parse(existing.getString("deadline")).isAfter(now())) {
@@ -100,8 +104,12 @@ internal class ResolutionEngine(
             state.json.remove("pending")
             state.save()
         }
-        val id = digest("${config.sdkId}:$kind:$value")
-        if (state.acknowledged(id)) return LinkBudResult.AlreadyAcknowledged
+        var id = digest("${config.sdkId}:$kind:$value")
+        if (state.acknowledged(id)) {
+            if (!reopening) return LinkBudResult.AlreadyAcknowledged
+            if (state.json.has("request")) return LinkBudResult.Rejected("pending_destination_exists")
+            id = digest(java.util.UUID.randomUUID().toString())
+        }
         val current = state.json.optJSONObject("request")
         if (current != null && current.optString("id") != id) return LinkBudResult.Rejected("pending_destination_exists")
         if (current == null) {

@@ -1,5 +1,11 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
 #include "Generated.xcconfig"
 
+// Xcode 27 rejects older Flutter's multi-slice lipo check; arm64e hosts use the arm64 simulator slice.
+LINKBUD_SIMULATOR_ARCH_arm64 = arm64
+LINKBUD_SIMULATOR_ARCH_arm64e = arm64
+LINKBUD_SIMULATOR_ARCH_x86_64 = x86_64
+ARCHS[sdk=iphonesimulator*] = $(LINKBUD_SIMULATOR_ARCH_$(NATIVE_ARCH_ACTUAL))
+
 LINKBUD_HOST = links.example.com
 #include? "Local.xcconfig"
