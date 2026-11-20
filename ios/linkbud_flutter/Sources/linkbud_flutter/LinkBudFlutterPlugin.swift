@@ -4,7 +4,7 @@ import UIKit
 public final class LinkBudFlutterPlugin: NSObject, FlutterPlugin {
     private static weak var owner: LinkBudFlutterPlugin?
     private static var sharedSDK: LinkBud?
-    private static var sharedConfiguration: [String: String]?
+    private static var sharedConfiguration: LinkBudConfiguration?
     private let channel: FlutterMethodChannel
     private var sdk: LinkBud?
     private var configuration: LinkBudConfiguration?
@@ -53,23 +53,29 @@ public final class LinkBudFlutterPlugin: NSObject, FlutterPlugin {
     }
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        let args = call.arguments as? [String: String] ?? [:]
+        let args = call.arguments as? [String: Any] ?? [:]
         if call.method == "initialize" {
             guard Self.owner == nil || Self.owner === self else {
                 result(FlutterError(code: "engine_in_use", message: "LinkBud supports one Flutter engine", details: nil)); return
             }
-            if let configuration = Self.sharedConfiguration, configuration != args {
-                result(FlutterError(code: "configuration_locked", message: "Restart the app to change environment", details: nil)); return
-            }
             do {
+                let extraHosts: [String]
+                if let value = args["additionalLinkHosts"] {
+                    guard let hosts = value as? [String] else { throw LinkBudError.invalidConfiguration }
+                    extraHosts = hosts
+                } else { extraHosts = [] }
+                guard let origin = URL(string: args["origin"] as? String ?? "") else { throw LinkBudError.invalidConfiguration }
+                let config = try LinkBudConfiguration(origin: origin, applicationID: args["applicationId"] as? String ?? "",
+                    environment: args["environment"] as? String ?? "", sdkID: args["sdkId"] as? String ?? "",
+                    appleAppID: args["appleAppId"] as? String ?? "", additionalLinkHosts: Set(extraHosts))
+                if let configuration = Self.sharedConfiguration, configuration != config {
+                    result(FlutterError(code: "configuration_locked", message: "Restart the app to change environment", details: nil)); return
+                }
                 if sdk == nil {
-                    guard let origin = URL(string: args["origin"] ?? "") else { throw LinkBudError.invalidConfiguration }
-                    let config = try LinkBudConfiguration(origin: origin, applicationID: args["applicationId"] ?? "",
-                        environment: args["environment"] ?? "", sdkID: args["sdkId"] ?? "", appleAppID: args["appleAppId"] ?? "", routePrefix: args["routePrefix"])
                     sdk = try Self.sharedSDK ?? LinkBud(configuration: config)
                     configuration = config
                     Self.sharedSDK = sdk
-                    Self.sharedConfiguration = args
+                    Self.sharedConfiguration = config
                     Self.owner = self
                 }
                 if let initialURL, configuration?.canHandle(url: initialURL) != true { self.initialURL = nil }
@@ -97,16 +103,16 @@ public final class LinkBudFlutterPlugin: NSObject, FlutterPlugin {
                 else { value = await sdk.resume() }
                 result(encode(value))
             case "handleUrl", "reopen":
-                guard let raw = args["url"], let url = URL(string: raw) else {
+                guard let raw = args["url"] as? String, let url = URL(string: raw) else {
                     result(encode(.rejected(reason: "invalid_link"))); return
                 }
                 if call.method == "reopen" { result(encode(await sdk.reopen(url: url))) }
                 else { result(encode(await sdk.handle(url: url))) }
             case "resume": result(encode(await sdk.resume()))
             case "pending": result(encode(await sdk.pending()))
-            case "recover": result(encode(await sdk.recover(code: args["code"] ?? "")))
-            case "acknowledge": result(await sdk.acknowledge(id: args["id"] ?? ""))
-            case "destinationFailed": result(await sdk.destinationFailed(id: args["id"] ?? "", reason: args["reason"] ?? ""))
+            case "recover": result(encode(await sdk.recover(code: args["code"] as? String ?? "")))
+            case "acknowledge": result(await sdk.acknowledge(id: args["id"] as? String ?? ""))
+            case "destinationFailed": result(await sdk.destinationFailed(id: args["id"] as? String ?? "", reason: args["reason"] as? String ?? ""))
             default: result(FlutterMethodNotImplemented)
             }
         }

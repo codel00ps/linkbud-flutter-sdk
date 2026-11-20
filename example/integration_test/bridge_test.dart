@@ -16,10 +16,6 @@ void main() {
         applicationId: 'aaaaaaaaaaaaaaaaaaaaaaaaaa',
         environment: 'default',
         sdkId: 'bbbbbbbbbbbbbbbbbbbbbbbbbb',
-        routePrefix: String.fromEnvironment(
-          'LINKBUD_ROUTE_PREFIX',
-          defaultValue: 'Ab1',
-        ),
         appleAppId: 'A1B2C3D4E5.dev.linkbud.sample',
       );
       // Android may return retryable/unavailable for Play services on an emulator.

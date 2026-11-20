@@ -1,5 +1,18 @@
 # 1.0.1 — November 12, 2026
 
+## 2.0.0 — Unreleased
+
+- Prepare optional `additionalLinkHosts` for incoming URLs while keeping API/response identity
+  and persisted journeys on the managed origin. Defaults/generated configs stay managed-only.
+- Cover exact host parsing, cross-host deduplication/restart, recovery and unchanged response
+  authority with shared native fixtures. Custom domains remain inactive; no publication.
+- Forward optional host lists through both native bridges and refresh the bundled snapshots/hash manifest.
+
+- Replace route-prefix configuration with a permanent application HTTPS origin and root-level six-character link codes.
+- Bind direct and recovery responses to the configured application host and code; reject retired URL formats.
+- Update samples, OS associations and setup documentation. A host app rebuild and coordinated backend cutover are required.
+
+
 - Align SDK/sample release metadata to 1.0.1 and configuration to the backend's single `default` environment. Retired environment names must be migrated before rebuilding.
 
 - Make the sample select AGP 8 or 9, retain an early Kotlin version declaration and apply KGP only when built-in Kotlin is absent. Keep Flutter's legacy DSL compatibility enabled for AGP 9.

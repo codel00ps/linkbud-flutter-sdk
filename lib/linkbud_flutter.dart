@@ -14,10 +14,10 @@ class LinkBudConfiguration {
     required this.environment,
     required this.sdkId,
     this.appleAppId,
-    this.routePrefix,
+    this.additionalLinkHosts = const [],
   });
 
-  /// Root HTTPS origin hosting this application's LinkBud links.
+  /// Permanent root HTTPS LinkBud origin used for API requests and response identity.
   final String origin;
 
   /// Public 26-character application identifier.
@@ -32,17 +32,22 @@ class LinkBudConfiguration {
   /// Apple team ID and bundle ID, required on iOS and ignored on Android.
   final String? appleAppId;
 
-  /// Immutable, case-sensitive three-character prefix enabling short links.
-  final String? routePrefix;
+  /// Additional exact ASCII DNS hosts accepted for incoming links only.
+  ///
+  /// Empty by default. Does not change the API origin or activate a domain.
+  /// Use the hosts from the generated LinkBud setup for your application.
+  /// Native implementations validate the hostnames.
+  final List<String> additionalLinkHosts;
 
   /// Encodes public configuration for the native method channel.
-  Map<String, String> toMap() => {
+  Map<String, Object> toMap() => {
     'origin': origin,
     'applicationId': applicationId,
     'environment': environment,
     'sdkId': sdkId,
     if (appleAppId != null) 'appleAppId': appleAppId!,
-    if (routePrefix != null) 'routePrefix': routePrefix!,
+    if (additionalLinkHosts.isNotEmpty)
+      'additionalLinkHosts': List<String>.unmodifiable(additionalLinkHosts),
   };
 }
 

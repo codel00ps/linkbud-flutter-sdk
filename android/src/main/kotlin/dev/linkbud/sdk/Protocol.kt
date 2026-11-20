@@ -5,48 +5,45 @@ import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.time.Instant
+import java.util.Locale
 import org.json.JSONObject
 
-data class LinkBudConfig(val origin: String, val applicationId: String, val environment: String, val sdkId: String, val routePrefix: String? = null) {
+data class LinkBudConfig @JvmOverloads constructor(
+    val origin: String, val applicationId: String, val environment: String, val sdkId: String,
+    val additionalLinkHosts: Set<String> = emptySet(),
+) {
+    private val extraHosts = additionalLinkHosts.map(::canonicalLinkHost).toSet()
     init {
         val uri = URI(origin)
         require(uri.scheme == "https" && uri.host != null && uri.rawUserInfo == null && uri.port == -1 &&
             uri.rawQuery == null && uri.rawFragment == null && uri.rawPath in listOf("", "/")) { "Use a root HTTPS origin" }
         require(applicationId.matches(Regex("[a-z0-9]{26}")) && sdkId.matches(Regex("[a-z0-9]{26}")))
         require(environment == "default")
-        require(routePrefix == null || routePrefix.matches(Regex("[A-Za-z0-9]{3}")))
     }
     internal val base get() = origin.trimEnd('/')
-    internal val prefix get() = "/l/$applicationId/$environment/"
 
     /** Checks URL ownership without resolving a destination or changing stored state. */
     fun canHandleUrl(url: String): Boolean = runCatching { reference(url) }.isSuccess
 
-    internal fun slug(url: String): String {
-        val uri = URI(url)
-        require(uri.scheme == "https" && uri.host == URI(origin).host && uri.port == -1 && uri.rawUserInfo == null &&
-            uri.rawQuery == null && uri.rawFragment == null)
-        val matched = prefix
-        require(uri.rawPath.startsWith(matched)) { "Link is outside this application" }
-        val slug = uri.rawPath.removePrefix(matched)
-        require(slug.matches(Regex("[A-Za-z0-9]{16}"))) { "Link is outside this application/environment" }
-        return slug
-    }
-
     internal fun reference(url: String): Pair<String, String> {
         require(url.length <= 2048)
         val uri = URI(url)
-        if (routePrefix != null && uri.rawPath?.startsWith("/$routePrefix/") == true) {
-            require(uri.scheme == "https" && uri.host == URI(origin).host && uri.port == -1 && uri.rawUserInfo == null &&
-                uri.rawQuery == null && uri.rawFragment == null)
-            val code = uri.rawPath.removePrefix("/$routePrefix/")
-            require(code.matches(Regex("[A-Za-z0-9]{6}")))
-            return "short" to code
-        }
-        return "slug" to slug(url)
+        require(uri.scheme == "https" && (uri.host == URI(origin).host || uri.host?.lowercase(Locale.ROOT) in extraHosts) && uri.port == -1 && uri.rawUserInfo == null &&
+            uri.rawQuery == null && uri.rawFragment == null)
+        require(uri.rawPath.matches(Regex("/[A-Za-z0-9]{6}"))) { "Link is outside this application" }
+        return "short" to uri.rawPath.removePrefix("/")
     }
 
     internal fun body() = JSONObject().put("sdk_id", sdkId).put("application_id", applicationId).put("environment", environment)
+}
+
+private fun canonicalLinkHost(host: String): String {
+    require(host.length <= 253 && host.all { it.code < 128 }) { "Use an exact ASCII DNS hostname" }
+    val canonical = host.lowercase(Locale.ROOT)
+    val labels = canonical.split('.')
+    require(labels.size >= 2 && labels.all { it.matches(Regex("[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?")) } &&
+        labels.last().any { it in 'a'..'z' }) { "Use an exact DNS hostname without scheme, wildcard, port or path" }
+    return canonical
 }
 
 data class PendingDestination(val id: String, val destination: String, val expiresAt: Instant?)
@@ -71,16 +68,13 @@ internal fun referrerToken(referrer: String): String? {
     return URLDecoder.decode(values[0][1], "UTF-8").also { require(it.matches(Regex("[A-Za-z0-9]{64}"))) }
 }
 
-internal fun validatePayload(config: LinkBudConfig, json: JSONObject, slug: String?, now: Instant, shortCode: String? = null): Pair<String, Instant?> {
+internal fun validatePayload(config: LinkBudConfig, json: JSONObject, now: Instant, shortCode: String? = null): Pair<String, Instant?> {
     require(json.getInt("version") == 1 && json.getString("sdk_id") == config.sdkId &&
         json.getString("application_id") == config.applicationId && json.getString("environment") == config.environment)
     require(json.getString("slug").matches(Regex("[A-Za-z0-9]{16}")))
-    if (slug != null) require(json.getString("slug") == slug)
-    if (shortCode != null || (slug == null && config.routePrefix != null)) {
-        require(config.routePrefix != null && json.getString("route_prefix") == config.routePrefix)
-        require(json.getString("short_code").matches(Regex("[A-Za-z0-9]{6}")))
-        if (shortCode != null) require(json.getString("short_code") == shortCode)
-    }
+    require(json.getString("link_host") == URI(config.origin).host)
+    require(json.getString("short_code").matches(Regex("[A-Za-z0-9]{6}")))
+    if (shortCode != null) require(json.getString("short_code") == shortCode)
     val path = json.getString("destination")
     require(path.length <= 2048)
     // Decode percent escapes once, matching the server's destination validator. '+' is a literal path character.

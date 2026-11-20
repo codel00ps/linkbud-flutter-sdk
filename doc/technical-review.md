@@ -1,3 +1,5 @@
+> Historical SDK 1.x review. Prefix and legacy-path descriptions below are superseded by SDK 2.0.0 and application subdomains.
+
 # SDK technical review follow-up — November 12, 2026
 
 This review checks the attached assessment against the current three SDK checkouts. Existing changes consolidating application configuration into environment `default` are preserved. New behavior is additive except for explicitly rejecting legacy URL queries/fragments, which now matches iOS. These changes are prepared as the 1.0.1 release candidate; published 1.0.0 artifacts and tags have not been replaced.

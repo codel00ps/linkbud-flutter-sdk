@@ -24,11 +24,8 @@ void main() {
               calls.add(call.method);
               if (call.method == 'initialize') {
                 expect(
-                  (call.arguments as Map)['routePrefix'],
-                  const String.fromEnvironment(
-                    'LINKBUD_ROUTE_PREFIX',
-                    defaultValue: 'Ab1',
-                  ),
+                  (call.arguments as Map).containsKey('routePrefix'),
+                  isFalse,
                 );
               }
               return switch (call.method) {
