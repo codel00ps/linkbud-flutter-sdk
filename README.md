@@ -1,6 +1,6 @@
-# LinkBud Flutter SDK · 1.0.1
+# LinkBud Flutter SDK · 2.0.0
 
-> Release candidate for 1.0.1. Publication and host-device acceptance are separate steps; existing 1.0.0 artifacts and tags remain unchanged.
+> Version 2.0.0 requires the managed-subdomain LinkBud contract. Use the generated Setup values and verify signed-device behavior before shipping your host app.
 
 A Flutter plugin for Android and iOS. Native code owns URL/payload validation, Play referral exchange, manual iOS recovery, installation identity, backup-excluded pending storage, retry deadlines and acknowledgment history. Dart does not implement a second referral protocol or store journey state.
 
@@ -11,14 +11,14 @@ Version 1.0.0 established the stable public API. Android API 23+ and iOS 15+ rem
 Run from your Flutter app directory:
 
 ```sh
-flutter pub add linkbud_flutter:^1.0.1
+flutter pub add linkbud_flutter:^2.0.0
 ```
 
 Or add the dependency in `pubspec.yaml` and run `flutter pub get`:
 
 ```yaml
 dependencies:
-  linkbud_flutter: ^1.0.1
+  linkbud_flutter: ^2.0.0
 ```
 
 Import the package in Dart:
@@ -36,12 +36,12 @@ The package includes the Android and iOS native source snapshots. Flutter apps s
 | Flutter / Dart | Flutter >=3.32 and Dart >=3.8 <4; API 23 verification toolchain: Flutter 3.32.8 / Dart 3.8.1 |
 | Android | Android API 23+ at the plugin level; the Flutter engine may require a newer OS. Compile/target SDK 36, JDK 17, Gradle 8.14.6, AGP 8.13.2, Kotlin 2.2.21, Play Install Referrer 2.2; sample uses NDK 29.0.14206865 |
 | iOS | iOS 15+, Swift 5.9 language mode, Xcode 15+; actual checked Xcode version is recorded in the roadmap |
-| Native SDK sources | LinkBud Android 1.0.1 and iOS 1.0.1, tracked snapshots from the sibling native repositories |
+| Native SDK sources | LinkBud Android 2.0.0 and iOS 2.0.0, tracked snapshots from the sibling native repositories |
 | Runtime ownership | One engine, one main-isolate client, one fixed configuration per app process |
 
 The plugin sets Android `minSdk` to 23. The sample uses the higher of API 23 and the selected Flutter engine minimum. Deploying to API 23 also requires a Flutter engine that supports that OS: use Flutter 3.32.8. Newer Flutter releases impose their own higher minimum ([Flutter 3.47 requires API 24+](https://docs.flutter.dev/reference/supported-platforms)), which a plugin cannot lower. The Android bridge supports both the Kotlin Gradle Plugin on AGP 8 and built-in Kotlin on AGP 9 hosts. All iOS declarations (CocoaPods, Swift Package Manager and sample deployment targets) remain at 15.0, matching the native iOS SDK.
 
-Candidate checks cover Flutter 3.32.8 / Dart 3.8.1 and Flutter 3.47.9 / Dart 3.13.7 with Xcode 27.2. Other toolchain combinations are not claimed as verified. No web, desktop, background isolate or multi-engine API is offered. A second engine receives `engine_in_use`; changing configuration receives `configuration_locked`. Use separate application IDs/build flavors for environments. Restart the app process to switch configuration.
+Historical 1.x checks covered Flutter 3.32.8 / Dart 3.8.1 and Flutter 3.47.9 / Dart 3.13.7. The 2.0.0 candidate was checked with the installed Flutter 3.47.9 toolchain and Xcode 27.2. Other toolchain combinations are not claimed as verified. No web, desktop, background isolate or multi-engine API is offered. A second engine receives `engine_in_use`; changing configuration receives `configuration_locked`. Use separate application IDs/build flavors for environments. Restart the app process to switch configuration.
 
 ### AGP 8 and AGP 9 hosts
 
@@ -89,7 +89,14 @@ flutter analyze
 
 The preparation command copies the exact native source files into tracked snapshot directories inside the plugin and writes their SHA-256 manifest. The bridge compiles these files directly; never edit the staged copies. Run it again after changing either native SDK. `--check` fails for missing, extra or altered source files. Run `--check` when both sibling native repositories are available to verify upstream parity. Run `--verify` in an independent Flutter checkout to verify bundled hashes without those repositories. The published Flutter package is self-contained and does not require users to install the standalone native SDK packages.
 
-Add a local `path:` dependency on this directory (as the sample does). For iOS, the package supplies both a CocoaPods specification and a Swift Package Manager manifest; CocoaPods is the checked integration. The committed native snapshots are ready to build without the sibling repositories. The example starts from a CocoaPods-compatible Xcode project without references to ungenerated Swift packages; newer Flutter tools can migrate their own generated integration. Refresh them with `tool/prepare_native.py` only after native changes; `--android-sdk` and `--ios-sdk` accept alternate checkout paths. Set the host minimum Android SDK to 23 and iOS deployment target to 15.0, and use the Android toolchain versions above. CocoaPods must be installed to build the iOS sample with the documented setup.
+Add a local `path:` dependency on this directory (as the sample does). For iOS, the package supplies both a CocoaPods specification and a Swift Package Manager manifest; CocoaPods is the checked integration. The committed native snapshots are ready to build without the sibling repositories. The example starts from a CocoaPods-compatible Xcode project without references to ungenerated Swift packages; newer Flutter tools can migrate their own generated integration. Refresh them with `tool/prepare_native.py` only after native changes; `--android-sdk` and `--ios-sdk` accept alternate checkout paths. Set the host minimum Android SDK to 23 and iOS deployment target to 15.0, and use the Android toolchain versions above. CocoaPods must be installed to build the iOS sample with the documented setup. On current Flutter tools, keep this checked integration for a local build without changing global settings:
+
+```sh
+cd example
+FLUTTER_SWIFT_PACKAGE_MANAGER=false flutter build ios --simulator --debug --no-codesign
+```
+
+Automatic Swift Package Manager migration in a renamed sibling checkout can encounter a package-identity mismatch. This does not affect the CocoaPods build. Tool-generated scene/project migrations and toolchain-specific dependency upgrades are not part of the subdomain change.
 
 Enable core library desugaring in every Android host app module, even when the app's minimum API is 26 or higher. The plugin's AAR metadata enforces this requirement. Desugaring supplies the missing Java APIs on API 23–25. The plugin configures its own Android library, but that setting is not applied to the consuming app:
 
@@ -114,17 +121,16 @@ Listen before initializing. Keep the subscription for the app lifetime. Initiali
 final linkbud = LinkBud.instance;
 final subscription = linkbud.incoming.listen(onLinkBudResult, onError: onBridgeError);
 final initial = await linkbud.initialize(const LinkBudConfiguration(
-  origin: 'https://links.your-domain.com',
+  origin: 'https://aurix.linkbud.io',
   applicationId: yourApplicationId,
   environment: 'default',
   sdkId: yourEnvironmentSdkId,
-  routePrefix: yourEnvironmentRoutePrefix, // Three characters, without slashes.
   appleAppId: yourAppleTeamAndBundleId, // Required on iOS; ignored on Android.
 ));
 onLinkBudResult(initial);
 ```
 
-Only use your environment's public identifiers; never ship a management credential. The native plugin receives Android VIEW intents and iOS browsing-web user activities. `handleUrl(url)` is available for host-managed entry points, but do not forward the same OS callback through two integrations. The native SDK validates the full origin/application/environment/prefix/code before any API request.
+Only use your environment's public identifiers; never ship a management credential. The native plugin receives Android VIEW intents and iOS browsing-web user activities. `handleUrl(url)` is available for host-managed entry points, but do not forward the same OS callback through two integrations. The native SDK validates the full origin/application/environment/code before any API request.
 
 On `PendingDestination`, wait for actual host authentication. After login, call `resume()` and use its newly validated result. Allowlist and authorize the route before navigating, then `acknowledge(id)` **after** navigation succeeds. Neither a URL, token, recovery code nor pending route authorizes protected content. The sample allows only `/welcome` and labels its login as simulated. Real hosts must make navigation idempotent across a crash between navigation and acknowledgment; bounded native deduplication does not guarantee exactly-once navigation.
 
@@ -170,10 +176,9 @@ The sample includes complete Android/iOS host projects. Configure public values 
 ```sh
 cd linkbud-flutter-sdk/example
 flutter pub get
-flutter run --dart-define=LINKBUD_ORIGIN=https://links.your-domain.com \
+flutter run --dart-define=LINKBUD_ORIGIN=https://aurix.linkbud.io \
   --dart-define=LINKBUD_APPLICATION=YOUR_APPLICATION_ID \
   --dart-define=LINKBUD_SDK_ID=YOUR_SDK_ID \
-  --dart-define=LINKBUD_ROUTE_PREFIX=Ab1 \
   --dart-define=LINKBUD_APPLE_APP_ID=YOUR_TEAM.YOUR_BUNDLE
 flutter test integration_test/bridge_test.dart -d YOUR_DEVICE_ID
 ```
@@ -189,7 +194,7 @@ To make a local distribution from the repository root:
 ```sh
 python3 linkbud-flutter-sdk/tool/prepare_native.py
 python3 linkbud-flutter-sdk/tool/prepare_native.py --check
-python3 linkbud-flutter-sdk/tool/package_preview.py /tmp/linkbud-flutter-1.0.1-candidate.tar.gz
+python3 linkbud-flutter-sdk/tool/package_preview.py /tmp/linkbud-flutter-2.0.0-candidate.tar.gz
 ```
 
 The archive includes native sources and their manifest, the bridge, sample and license. It excludes caches, local settings and build outputs. Unpack it into a fresh directory, run `flutter pub get`, `flutter test` and build both sample hosts before distribution. The legacy name `package_preview.py` is retained for script compatibility; it creates a local candidate archive and never publishes. Before release, run `flutter pub publish --dry-run`, review the exact file list, and verify both host builds from an extracted archive. Publication and clean public-registry installation verification are separate steps.
@@ -227,22 +232,21 @@ Every application has one configuration. Set environment to `default`. Testing, 
 
 ## Short URLs
 
-Configure `routePrefix` with the environment’s immutable three-character Base62 value, without
-slashes. A short link is `https://LINK_HOST/Ab1/Cd34Ef`: prefix and code are case-sensitive.
-Copy the real value from LinkBud Settings; the example is illustrative. The SDK sends the
-configured application/environment/SDK IDs plus `route_prefix` and `code` to resolution and
-checks the response against that context. Short links reject extra path segments, credentials,
-custom ports, queries, fragments and encoded aliases.
+Configure the application’s permanent origin, for example `https://aurix.linkbud.io`.
+A link is `https://aurix.linkbud.io/Cd34Ef`; its six-character Base62 code is case-sensitive.
+There is no route-prefix setting. Direct resolution sends `sdk_id`, `application_id`,
+`environment: default` and `code` to `/api/v1/resolve` on that application origin.
+Direct and recovery responses must include the matching `link_host` and `short_code`.
+The SDK checks the exact HTTPS host, IDs, code and payload before returning a destination.
+Credentials, custom ports, extra segments, encoded path aliases, queries and fragments are rejected.
 
-The optional setting keeps existing constructors working. While the rollout flag is off, old
-paths remain accepted for a staged upgrade; after activation the server rejects legacy slug
-resolution and publishes only short paths in association documents. Update Android manifest
-filters before activation; cached OS association changes may take time. Reopening an old URL
-after cutover fails and requires a newly shared URL. Adding a prefix preserves stored installation
-identity and pending recovery; always resume/revalidate before authorizing navigation. Recovery
-responses include the same prefix/code context. Android still needs a matching Play installation;
-iOS still requires explicit code entry or reopening the original short link after installation.
-These source changes do not update Aurix or any installed build.
+Old prefix URLs and `/l/...` URLs are retired and return 404. SDK 1.x configurations do not
+support this contract. Rebuild and distribute host apps with SDK 2.0.0, replace their configured
+origin and OS associations, and reshare links. A new origin changes the SDK storage namespace;
+finish existing journeys before cutover. Recovery remains limited to matching Play installations
+on Android and explicit code entry or reopening the link on iOS. Continuation pages use
+`https://aurix.linkbud.io/continue/Cd34Ef` and remain in the browser.
+
 
 ## Privacy and host responsibilities
 
@@ -256,9 +260,51 @@ Run dependency generation in the example itself before using `--no-pub`; resolvi
 cd example
 flutter pub get
 flutter build apk --release --no-pub
-flutter build ios --release --no-codesign --no-pub
+FLUTTER_SWIFT_PACKAGE_MANAGER=false flutter build ios --release --no-codesign --no-pub
 ```
 
 The unsigned iOS result is a build check, not an installable App Store release. Use your own signing and real public environment configuration for device distribution.
 
-See [the 1.0.1 release checks](doc/release-1.0.1.md) for artifact preparation and publication gates.
+See [the 2.0.0 release checks](doc/release-2.0.0.md) for artifact preparation and publication gates.
+
+## Custom domains
+
+The API origin is always the application's LinkBud subdomain, for example
+`https://aurix.linkbud.io`. Only approved active additional incoming hosts go in
+`additionalLinkHosts`. Saved, pending, disconnected and unavailable domains are omitted
+from LinkBud's generated configuration. Do not put a customer hostname in `origin`, accept
+configuration from an incoming URL, or embed server management credentials in the app.
+
+Backend configuration uses `additional_link_hosts`; map that public list to the SDK's
+`additionalLinkHosts` option. The SDK continues to validate response `link_host` against its
+managed API origin, with exact app/SDK/environment/code identity checks. The cross-repository
+`mobile-domain-contract.json` fixture is checked against actual backend responses and consumed
+by Android, Swift and Flutter tests. Native URL vectors also cover IDNs (ASCII punycode),
+encoded/wildcard/port/foreign hosts and retired paths.
+
+Keep **both** the managed and approved custom hosts in platform declarations. For Android, use
+a separate autoVerify intent filter per exact host, HTTPS only, with `android:pathPattern="/......"`.
+For iOS, add one `applinks:HOST` Associated Domains entry per host. `/continue/{code}` is a browser
+recovery page and must not be captured by the Android six-character filter or iOS associations.
+Flutter needs the declarations for each selected Android/iOS build and its built-in deep-link
+handlers disabled as documented above. Use LinkBud's generated app-specific snippets.
+
+A hostname change needs a new signed mobile build and release. DNS/SSL cannot change installed
+manifests, entitlements or the native client's allowlist snapshot. The samples keep an empty
+additional-host list by default; add approved hosts and matching OS declarations together.
+After removal, backend custom-host HTTP endpoints fail closed and generated exports return to
+managed-only. A stale installed app may still accept a previously configured host and resolve its
+code through the managed API; it cannot resolve another application's code. Update/restart the
+app with the new trusted configuration to reject newly received removed-host URLs. Existing
+pending journeys deliberately survive allowlist changes and are revalidated through the managed
+API; disabled/expired links fail closed. Do not treat domain removal as remote erasure of client
+state or installed OS declarations. Flutter's initialized native engine locks configuration until
+process restart.
+
+Android Play Install Referrer and explicit iOS recovery still use the managed API origin. Never
+claim automatic iOS deferred recovery. Destination hints remain untrusted: revalidate after real
+authentication and acknowledge only successful authorized navigation.
+
+Follow the [signed-device acceptance guide](doc/acceptance.md) before rolling
+out a host app. Verify signed cold and warm launches, store installation, and public HTTPS
+association files for every configured host.

@@ -1,3 +1,5 @@
+> Historical 1.0.1 release record. Its routing contract is retired; use [2.0.0 release checks](release-2.0.0.md) for application subdomains.
+
 # Flutter 1.0.1 release candidate
 
 The package, Android project, CocoaPods specification and example version target 1.0.1. The native-source manifest tracks the matching Android/iOS sources. Flutter 3.32 / Dart 3.8 and native API 23 / iOS 15 support are retained; the host Flutter engine can impose a higher Android minimum.

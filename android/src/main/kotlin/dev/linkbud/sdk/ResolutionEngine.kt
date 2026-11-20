@@ -129,9 +129,10 @@ internal class ResolutionEngine(
         }
         val kind = request.getString("kind")
         val value = request.getString("value")
+        if (kind !in listOf("short", "token")) return reject("invalid_link")
         if (!request.has("started_at")) { request.put("started_at", now().toEpochMilli()); state.save() }
         val body = config.body().put("analytics_version", 2)
-        if (kind == "slug" || kind == "short") {
+        if (kind == "short") {
             if (!request.has("event_id")) {
                 request.put("event_id", digest(java.util.UUID.randomUUID().toString()))
                 state.save()
@@ -142,10 +143,7 @@ internal class ResolutionEngine(
             body.put("token", value).put("android_package", packageName).put("installation_id", state.installationId())
             "/api/v1/android/handoff"
         } else {
-            if (kind == "short") {
-                if (config.routePrefix == null) return reject("missing_route_prefix")
-                body.put("route_prefix", config.routePrefix).put("code", value)
-            } else { body.put("slug", value) }
+            body.put("code", value)
             "/api/v1/resolve"
         }
         val response = try { transport.post(endpoint, body) } catch (_: java.io.IOException) { return defer(request, 0) }
@@ -153,7 +151,7 @@ internal class ResolutionEngine(
         if (response.status != 200) return reject("http_${response.status}")
         if (kind == "token" && !response.json.has("handoff_expires_at")) return reject("invalid_payload")
         val (destination, expiry) = try {
-            validatePayload(config, response.json, if (kind == "slug") value else null, now(), if (kind == "short") value else null)
+            validatePayload(config, response.json, now(), if (kind == "short") value else null)
         } catch (_: Exception) { return reject("invalid_payload") }
         val id = request.getString("id")
         val limits = mutableListOf(Instant.parse(request.getString("deadline")))

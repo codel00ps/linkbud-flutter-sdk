@@ -79,7 +79,7 @@ class LinkBudFlutterPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Act
         if (call.method == "initialize") {
             try {
                 val config = LinkBudConfig(required(call, "origin"), required(call, "applicationId"),
-                    required(call, "environment"), required(call, "sdkId"), call.argument<String>("routePrefix"))
+                    required(call, "environment"), required(call, "sdkId"), additionalHosts(call))
                 if (owner != null && owner !== this) {
                     result.error("engine_in_use", "LinkBud supports one Flutter engine", null); return
                 }
@@ -120,6 +120,12 @@ class LinkBudFlutterPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Act
         } catch (_: Exception) { result.error("invalid_arguments", "Expected string arguments", null) }
     }
     private fun required(call: MethodCall, key: String): String = requireNotNull(call.argument<String>(key))
+    private fun additionalHosts(call: MethodCall): Set<String> {
+        if (!call.hasArgument("additionalLinkHosts")) return emptySet()
+        val hosts = call.argument<Any>("additionalLinkHosts")
+        require(hosts is List<*> && hosts.all { it is String })
+        return hosts.map { it as String }.toSet()
+    }
     private fun encode(result: LinkBudResult): Map<String, Any?> = when (result) {
         is LinkBudResult.Pending -> mapOf("status" to "pending", "id" to result.value.id,
             "destination" to result.value.destination, "expiresAt" to result.value.expiresAt.toString())

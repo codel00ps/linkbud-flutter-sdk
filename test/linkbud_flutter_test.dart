@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:linkbud_flutter/linkbud_flutter.dart';
@@ -35,6 +37,51 @@ void main() {
   });
 
   test(
+    'final backend configuration keeps API authority and forwards alias results',
+    () async {
+      final fixture =
+          jsonDecode(
+                File(
+                  'test/fixtures/mobile-domain-contract.json',
+                ).readAsStringSync(),
+              )
+              as Map<String, dynamic>;
+      final values = fixture['configuration'] as Map<String, dynamic>;
+      final configured = LinkBudConfiguration(
+        origin: values['link_origin'] as String,
+        applicationId: values['application_id'] as String,
+        environment: values['environment'] as String,
+        sdkId: values['sdk_id'] as String,
+        appleAppId: '${values['apple_team_id']}.${values['apple_bundle_id']}',
+        additionalLinkHosts: List<String>.from(
+          values['additional_link_hosts'] as List,
+        ),
+      );
+      await LinkBud.instance.initialize(configured);
+      expect((calls.first.arguments as Map)['origin'], values['link_origin']);
+      expect(
+        (calls.first.arguments as Map)['additionalLinkHosts'],
+        values['additional_link_hosts'],
+      );
+      response = {
+        'status': 'pending',
+        'id': 'shared-contract-delivery',
+        'destination': (fixture['resolution'] as Map)['destination'],
+        'expiresAt': '2027-01-01T00:00:00Z',
+      };
+      final custom =
+          await LinkBud.instance.handleUrl(fixture['custom_url'] as String)
+              as PendingDestination;
+      final managed =
+          await LinkBud.instance.handleUrl(fixture['managed_url'] as String)
+              as PendingDestination;
+      expect(custom.id, managed.id);
+      expect(custom.destination, (fixture['resolution'] as Map)['destination']);
+      expect(calls.last.arguments, {'url': fixture['managed_url']});
+    },
+  );
+
+  test(
     'initialize sends only public config and obtains cold launch result',
     () async {
       expect(await LinkBud.instance.initialize(config), isA<LinkBudEmpty>());
@@ -43,16 +90,57 @@ void main() {
     },
   );
 
-  test('short routing configuration is passed to native SDKs', () {
+  test('application domain configuration is passed to native SDKs', () {
     const shortConfig = LinkBudConfiguration(
       origin: 'https://links.example.com',
       applicationId: 'aaaaaaaaaaaaaaaaaaaaaaaaaa',
       environment: 'default',
       sdkId: 'bbbbbbbbbbbbbbbbbbbbbbbbbb',
-      routePrefix: 'Ab1',
     );
-    expect(shortConfig.toMap()['routePrefix'], 'Ab1');
+    expect(shortConfig.toMap()['origin'], 'https://links.example.com');
     expect(config.toMap().containsKey('routePrefix'), isFalse);
+    expect(config.toMap().containsKey('additionalLinkHosts'), isFalse);
+  });
+
+  test(
+    'additional incoming hosts reach native without replacing API origin',
+    () async {
+      const configured = LinkBudConfiguration(
+        origin: 'https://links.example.com',
+        applicationId: 'aaaaaaaaaaaaaaaaaaaaaaaaaa',
+        environment: 'default',
+        sdkId: 'bbbbbbbbbbbbbbbbbbbbbbbbbb',
+        appleAppId: 'A1B2C3D4E5.dev.linkbud.sample',
+        additionalLinkHosts: ['go.example.com'],
+      );
+      await LinkBud.instance.initialize(configured);
+      final arguments = calls.first.arguments as Map;
+      expect(arguments['origin'], config.origin);
+      expect(arguments['additionalLinkHosts'], ['go.example.com']);
+      expect(arguments['applicationId'], config.applicationId);
+      expect(arguments['sdkId'], config.sdkId);
+      expect(arguments.containsKey('managementSecret'), isFalse);
+    },
+  );
+
+  test('encoded host lists are snapshots rather than mutable references', () {
+    final hosts = ['go.example.com'];
+    final configured = LinkBudConfiguration(
+      origin: config.origin,
+      applicationId: config.applicationId,
+      environment: config.environment,
+      sdkId: config.sdkId,
+      additionalLinkHosts: hosts,
+    );
+    final encoded = configured.toMap();
+    hosts[0] = 'other.example.com';
+    expect(encoded['additionalLinkHosts'], ['go.example.com']);
+    expect(
+      () => (encoded['additionalLinkHosts'] as List<String>).add(
+        'other.example.com',
+      ),
+      throwsUnsupportedError,
+    );
   });
 
   test(

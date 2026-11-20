@@ -17,6 +17,23 @@ class DistributionTests(unittest.TestCase):
             self.skipTest('Native test fixtures are only available in a multi-SDK checkout')
         self.assertEqual(json.loads(android.read_text()), json.loads(ios.read_text()))
 
+    def test_native_custom_domain_vectors_match_when_sibling_checkouts_are_available(self):
+        android = SOURCE.parent / 'linkbud-android-sdk/sdk/src/test/resources/custom-domain-vectors.json'
+        ios = SOURCE.parent / 'linkbud-ios-sdk/Tests/LinkBudTests/Fixtures/custom-domain-vectors.json'
+        if not android.exists() or not ios.exists():
+            self.skipTest('Native test fixtures are only available in a multi-SDK checkout')
+        self.assertEqual(json.loads(android.read_text()), json.loads(ios.read_text()))
+
+    def test_final_backend_contract_matches_all_checked_repositories(self):
+        fixture = SOURCE / 'test/fixtures/mobile-domain-contract.json'
+        paths = [SOURCE.parent / 'linkbud/tests/Fixtures/mobile-domain-contract.json',
+                 SOURCE.parent / 'linkbud-android-sdk/sdk/src/test/resources/mobile-domain-contract.json',
+                 SOURCE.parent / 'linkbud-ios-sdk/Tests/LinkBudTests/Fixtures/mobile-domain-contract.json']
+        if not all(path.exists() for path in paths):
+            self.skipTest('Cross-repository contract verification requires the multi-repository checkout')
+        for path in paths:
+            self.assertEqual(json.loads(fixture.read_text()), json.loads(path.read_text()))
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name) / 'standalone-flutter'

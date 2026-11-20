@@ -64,10 +64,8 @@ class _LinkBudExampleState extends State<LinkBudExample> {
               'LINKBUD_SDK_ID',
               defaultValue: 'bbbbbbbbbbbbbbbbbbbbbbbbbb',
             ),
-            routePrefix: String.fromEnvironment(
-              'LINKBUD_ROUTE_PREFIX',
-              defaultValue: 'Ab1',
-            ),
+            // Add only approved hosts, with matching Android/iOS declarations.
+            additionalLinkHosts: [],
             appleAppId: String.fromEnvironment(
               'LINKBUD_APPLE_APP_ID',
               defaultValue: 'A1B2C3D4E5.dev.linkbud.sample',
