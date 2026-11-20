@@ -1,8 +1,6 @@
-> SDK 2.0.0 subdomain candidate — publication pending. Use this checkout for local integration until the new artifacts are released. Published 1.x packages use the retired protocol.
-
 # LinkBud Flutter SDK · 2.0.0
 
-> Release candidate for 2.0.0. Publication and host-device acceptance are separate steps; existing 1.0.0 artifacts and tags remain unchanged.
+> Version 2.0.0 requires the managed-subdomain LinkBud contract. Use the generated Setup values and verify signed-device behavior before shipping your host app.
 
 A Flutter plugin for Android and iOS. Native code owns URL/payload validation, Play referral exchange, manual iOS recovery, installation identity, backup-excluded pending storage, retry deadlines and acknowledgment history. Dart does not implement a second referral protocol or store journey state.
 
